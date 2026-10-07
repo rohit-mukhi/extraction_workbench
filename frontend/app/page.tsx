@@ -91,14 +91,14 @@ export default function HomePage() {
   const filteredTickets = getFilteredTickets();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-[#1a1a1a] border-b border-[#333333]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-100">
             Extraction Workbench
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-400">
             Select tickets to extract structured data
           </p>
         </div>
@@ -107,11 +107,11 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-4 p-4 bg-red-950 border border-red-800 rounded-md">
+            <p className="text-sm text-red-200">{error}</p>
             <button
               onClick={loadTickets}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+              className="mt-2 text-sm text-red-300 hover:text-red-100 underline"
             >
               Retry
             </button>
@@ -119,7 +119,7 @@ export default function HomePage() {
         )}
 
         {/* Controls */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             {/* Search */}
             <div className="flex-1 w-full sm:w-auto">
@@ -128,7 +128,7 @@ export default function HomePage() {
                 placeholder="Search tickets by subject, body, or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-[#1f1f1f] border border-[#333333] text-gray-100 placeholder-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -137,14 +137,14 @@ export default function HomePage() {
               <button
                 onClick={selectAll}
                 disabled={filteredTickets.length === 0}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm text-gray-300 bg-[#242424] rounded-md hover:bg-[#2f2f2f] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Select All
               </button>
               <button
                 onClick={clearSelection}
                 disabled={selectedTickets.size === 0}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm text-gray-300 bg-[#242424] rounded-md hover:bg-[#2f2f2f] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Clear
               </button>
@@ -153,7 +153,7 @@ export default function HomePage() {
 
           {/* Selection Count */}
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               {selectedTickets.size} of {filteredTickets.length} tickets selected
               {searchQuery && ` (filtered from ${tickets.length} total)`}
             </p>
@@ -170,8 +170,8 @@ export default function HomePage() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="mt-2 text-sm text-gray-600">Loading tickets...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-100"></div>
+            <p className="mt-2 text-sm text-gray-400">Loading tickets...</p>
           </div>
         )}
 
@@ -185,12 +185,12 @@ export default function HomePage() {
         )}
 
         {!loading && filteredTickets.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200">
+          <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] divide-y divide-[#333333]">
             {filteredTickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                  selectedTickets.has(ticket.id) ? "bg-blue-50" : ""
+                className={`p-4 hover:bg-[#242424] cursor-pointer transition-colors ${
+                  selectedTickets.has(ticket.id) ? "bg-blue-950/30" : ""
                 }`}
                 onClick={() => toggleTicket(ticket.id)}
               >
@@ -200,7 +200,7 @@ export default function HomePage() {
                     type="checkbox"
                     checked={selectedTickets.has(ticket.id)}
                     onChange={() => toggleTicket(ticket.id)}
-                    className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-600 focus:ring-blue-500 bg-[#1f1f1f]"
                     onClick={(e) => e.stopPropagation()}
                   />
 
@@ -210,21 +210,21 @@ export default function HomePage() {
                       <span className="text-xs font-mono text-gray-500">
                         {ticket.id}
                       </span>
-                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                      <span className="text-xs px-2 py-1 bg-[#242424] text-gray-400 rounded">
                         {ticket.channel}
                       </span>
                       {ticket.attachments > 0 && (
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                        <span className="text-xs px-2 py-1 bg-blue-950 text-blue-300 rounded">
                           {ticket.attachments} attachment{ticket.attachments > 1 ? "s" : ""}
                         </span>
                       )}
                     </div>
 
-                    <h3 className="text-sm font-medium text-gray-900 mb-1">
+                    <h3 className="text-sm font-medium text-gray-100 mb-1">
                       {ticket.subject || "(No subject)"}
                     </h3>
 
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                    <p className="text-sm text-gray-400 line-clamp-2 mb-2">
                       {ticket.body}
                     </p>
 

@@ -101,10 +101,10 @@ export default function JobDetailPage({ params }: PageProps) {
 
   if (loading && !job) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-          <p className="mt-4 text-gray-600">Loading job...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-100"></div>
+          <p className="mt-4 text-gray-400">Loading job...</p>
         </div>
       </div>
     );
@@ -112,9 +112,9 @@ export default function JobDetailPage({ params }: PageProps) {
 
   if (error && !job) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-red-400 mb-4">{error}</p>
           <button
             onClick={() => router.push("/")}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -127,22 +127,22 @@ export default function JobDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-[#1a1a1a] border-b border-[#333333]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
               <button
                 onClick={() => router.push("/")}
-                className="text-sm text-blue-600 hover:text-blue-800 mb-2"
+                className="text-sm text-blue-400 hover:text-blue-300 mb-2"
               >
                 ← Back to Tickets
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-100">
                 Job {jobId}
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 Processing {job?.progress.total} tickets
               </p>
             </div>
@@ -161,18 +161,18 @@ export default function JobDetailPage({ params }: PageProps) {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Progress Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Progress</h2>
+            <h2 className="text-lg font-semibold text-gray-100">Progress</h2>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 job?.status === "completed"
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-green-950 text-green-300"
                   : job?.status === "running"
-                  ? "bg-blue-100 text-blue-800"
+                  ? "bg-blue-950 text-blue-300"
                   : job?.status === "failed"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-gray-100 text-gray-800"
+                  ? "bg-red-950 text-red-300"
+                  : "bg-[#242424] text-gray-300"
               }`}
             >
               {job?.status.toUpperCase()}
@@ -181,44 +181,44 @@ export default function JobDetailPage({ params }: PageProps) {
 
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-[#242424] rounded-full h-2">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               ></div>
             </div>
-            <p className="text-sm text-gray-600 mt-2">{progressPercent}% complete</p>
+            <p className="text-sm text-gray-400 mt-2">{progressPercent}% complete</p>
           </div>
 
           {/* Progress Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             <div>
               <p className="text-xs text-gray-500">Total</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-gray-100">
                 {job?.progress.total}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Queued</p>
-              <p className="text-2xl font-bold text-gray-600">
+              <p className="text-2xl font-bold text-gray-400">
                 {job?.progress.queued}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Running</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-blue-400">
                 {job?.progress.running}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Completed</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-green-400">
                 {job?.progress.completed}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Failed</p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-2xl font-bold text-red-400">
                 {job?.progress.failed}
               </p>
             </div>
@@ -229,8 +229,8 @@ export default function JobDetailPage({ params }: PageProps) {
         {records.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Records List */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4">
+              <h2 className="text-lg font-semibold text-gray-100 mb-4">
                 Extracted Records
               </h2>
 
@@ -241,8 +241,8 @@ export default function JobDetailPage({ params }: PageProps) {
                     onClick={() => setSelectedRecordId(record.id)}
                     className={`w-full text-left p-3 rounded-md border transition-colors ${
                       selectedRecordId === record.id
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        ? "border-blue-500 bg-blue-950/30"
+                        : "border-[#333333] hover:border-[#444444] hover:bg-[#242424]"
                     } ${
                       record.status === "needs_review"
                         ? "border-l-4 border-l-yellow-500"
@@ -261,10 +261,10 @@ export default function JobDetailPage({ params }: PageProps) {
                         {record.status.replace("_", " ")}
                       </span>
                     </div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-100">
                       {record.company}
                     </p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-400">
                       {record.product} • {CATEGORY_LABELS[record.category]}
                     </p>
                   </button>
@@ -273,25 +273,25 @@ export default function JobDetailPage({ params }: PageProps) {
             </div>
 
             {/* Detail View */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4">
               {selectedRecord && selectedTicket ? (
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  <h2 className="text-lg font-semibold text-gray-100 mb-4">
                     Review & Edit
                   </h2>
 
                   {/* Original Ticket */}
-                  <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <div className="mb-6 p-4 bg-[#242424] rounded-md border border-[#333333]">
+                    <h3 className="text-sm font-medium text-gray-300 mb-2">
                       Original Ticket
                     </h3>
                     <p className="text-xs text-gray-500 mb-1">
                       {selectedTicket.id} • {selectedTicket.from_email}
                     </p>
-                    <p className="text-sm font-medium text-gray-900 mb-2">
+                    <p className="text-sm font-medium text-gray-100 mb-2">
                       {selectedTicket.subject}
                     </p>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap max-h-32 overflow-y-auto">
                       {selectedTicket.body}
                     </p>
                   </div>
@@ -451,11 +451,11 @@ function RecordField({
   }
 
   return (
-    <div className="border border-gray-200 rounded-md p-3">
+    <div className="border border-[#333333] rounded-md p-3 bg-[#242424]">
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <label className="text-sm font-medium text-gray-300">{label}</label>
         {isEdited && (
-          <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
+          <span className="text-xs px-2 py-1 bg-green-950 text-green-300 rounded">
             Human Edited
           </span>
         )}
@@ -463,7 +463,7 @@ function RecordField({
 
       {!editing ? (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-900">
+          <span className="text-sm text-gray-100">
             {type === "checkbox"
               ? value
                 ? "Yes"
@@ -472,7 +472,7 @@ function RecordField({
           </span>
           <button
             onClick={() => setEditing(true)}
-            className="text-xs text-blue-600 hover:text-blue-800"
+            className="text-xs text-blue-400 hover:text-blue-300"
           >
             Edit
           </button>
@@ -483,7 +483,7 @@ function RecordField({
             <select
               value={localValue as string}
               onChange={(e) => setLocalValue(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 bg-[#1f1f1f] border border-[#333333] text-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {options.map((opt) => (
                 <option key={opt} value={opt}>
@@ -496,14 +496,14 @@ function RecordField({
               type="checkbox"
               checked={localValue as boolean}
               onChange={(e) => setLocalValue(e.target.checked)}
-              className="h-4 w-4 text-blue-600 rounded border-gray-300"
+              className="h-4 w-4 text-blue-600 rounded border-gray-600 bg-[#1f1f1f]"
             />
           ) : (
             <input
               type={type}
               value={localValue as string}
               onChange={(e) => setLocalValue(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="w-full px-3 py-2 bg-[#1f1f1f] border border-[#333333] text-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           )}
 
@@ -516,7 +516,7 @@ function RecordField({
             </button>
             <button
               onClick={handleCancel}
-              className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-md hover:bg-gray-300"
+              className="px-3 py-1 bg-[#333333] text-gray-300 text-xs rounded-md hover:bg-[#444444]"
             >
               Cancel
             </button>
