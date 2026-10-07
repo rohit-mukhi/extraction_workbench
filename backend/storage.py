@@ -1,12 +1,15 @@
 """
 In-memory storage layer for tickets, jobs, and records.
 Loads tickets from tickets.jsonl and manages all data in memory.
+Persists jobs and records to disk using pickle for restart resilience.
 """
 import json
 import os
+import pickle
 from typing import Dict, Optional, List
 from datetime import datetime, date
 from pathlib import Path
+import logging
 
 from models import (
     Ticket,
@@ -21,15 +24,26 @@ from models import (
     RequestedAction
 )
 
+logger = logging.getLogger(__name__)
+
 
 class Storage:
-    """In-memory storage for all data."""
+    """In-memory storage for all data with disk persistence."""
     
-    def __init__(self):
-        """Initialize empty storage."""
+    def __init__(self, persist_file: str = "data.pkl"):
+        """
+        Initialize storage.
+        
+        Args:
+            persist_file: Path to pickle file for persistence
+        """
         self.tickets: Dict[str, Ticket] = {}
         self.jobs: Dict[str, Job] = {}
         self.records: Dict[str, ExtractedRecord] = {}
+        self.persist_file = Path(__file__).parent / persist_file
+        
+        # Load persisted data if it exists
+        self._load_from_disk()
     
     def load_tickets(self) -> None:
         """
@@ -78,6 +92,7 @@ class Storage:
         """
         job = Job(ticket_ids=ticket_ids)
         self.jobs[job.id] = job
+        self._save_to_disk()  # Persist after creating job
         return job
     
     def get_job(self, job_id: str) -> Optional[Job]:
@@ -90,6 +105,7 @@ class Storage:
         if job:
             job.status = status
             job.updated_at = datetime.utcnow()
+            self._save_to_disk()  # Persist after status update
     
     def create_record(self, record: ExtractedRecord) -> ExtractedRecord:
         """
@@ -110,6 +126,7 @@ class Storage:
                     job.record_ids.append(record.id)
                 break
         
+        self._save_to_disk()  # Persist after creating record
         return record
     
     def get_record(self, record_id: str) -> Optional[ExtractedRecord]:
@@ -233,6 +250,7 @@ class Storage:
             if record.status == RecordStatus.NEEDS_REVIEW:
                 record.status = RecordStatus.COMPLETED
             
+            self._save_to_disk()  # Persist after update
             return record
         
         except Exception as e:
@@ -265,3 +283,41 @@ class Storage:
         self.tickets.clear()
         self.jobs.clear()
         self.records.clear()
+        self._save_to_disk()
+    
+    def _save_to_disk(self) -> None:
+        """
+        Persist jobs and records to disk using pickle.
+        Tickets are not persisted (reloaded from tickets.jsonl on startup).
+        """
+        try:
+            data = {
+                "jobs": self.jobs,
+                "records": self.records,
+                "version": "1.0"
+            }
+            
+            with open(self.persist_file, "wb") as f:
+                pickle.dump(data, f)
+            
+            logger.debug(f"Persisted {len(self.jobs)} jobs and {len(self.records)} records")
+        except Exception as e:
+            logger.error(f"Failed to persist data: {e}")
+    
+    def _load_from_disk(self) -> None:
+        """Load jobs and records from disk if persist file exists."""
+        if not self.persist_file.exists():
+            logger.info("No persist file found, starting with empty storage")
+            return
+        
+        try:
+            with open(self.persist_file, "rb") as f:
+                data = pickle.load(f)
+            
+            self.jobs = data.get("jobs", {})
+            self.records = data.get("records", {})
+            
+            logger.info(f"Loaded {len(self.jobs)} jobs and {len(self.records)} records from disk")
+        except Exception as e:
+            logger.error(f"Failed to load persisted data: {e}")
+            # Continue with empty storage if load fails

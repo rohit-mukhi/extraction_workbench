@@ -6,25 +6,34 @@ This document covers key design decisions made during the implementation of the 
 
 ## 1. Data Persistence Strategy
 
-**Decision:** In-memory storage with future consideration for restart persistence.
+**Decision:** In-memory storage with pickle persistence for restart resilience.
+
+**Implementation:**
+I implemented in-memory storage using Python dictionaries, with automatic persistence to disk using pickle. Jobs and extracted records are saved to `data.pkl` after every create/update operation, ensuring data survives server restarts.
 
 **Reasoning:**
-The requirements specified that "in-memory state that survives for the life of the process is fine." For this prototype, I implemented storage using Python dictionaries to meet the deadline efficiently. However, I recognized that deployment on free-tier platforms (Render, Railway) involves frequent server restarts due to auto-sleep and redeployment.
+The requirements specified that "in-memory state that survives for the life of the process is fine." However, I recognized that deployment on free-tier platforms (Render, Railway) involves frequent server restarts due to auto-sleep and redeployment. To ensure a better demo experience, I added simple pickle serialization.
+
+**What's Persisted:**
+- ✅ Jobs (all extraction jobs)
+- ✅ Records (all extracted data and human edits)
+- ✅ Loaded automatically on startup
+
+**What's NOT Persisted:**
+- ❌ Tickets (reloaded from `tickets.jsonl` every startup - this is intentional)
 
 **Trade-offs:**
-- ✅ **Pros:** Fast development, no database setup complexity, meets stated requirements
-- ⚠️ **Cons:** Data loss on server restart, not suitable for production use
+- ✅ **Pros:** Fast development, survives restarts, no database setup, meets requirements
+- ⚠️ **Cons:** Single-file storage, no concurrent write safety, pickle format is Python-specific
 
 **Production Approach:**
 In a production system, I would implement PostgreSQL with SQLAlchemy for:
 - ACID compliance for concurrent user access
-- Data persistence across restarts
+- Proper transactions and rollback support
 - Query optimization and indexing
 - Connection pooling for performance
 - Proper migrations for schema changes
-
-**Mitigation for Demo:**
-If time permits before submission, I will add simple pickle serialization to persist jobs and records between restarts, ensuring the deployed demo remains functional even with platform restarts.
+- Multi-process safety
 
 ---
 
