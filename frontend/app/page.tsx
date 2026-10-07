@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getTickets, createJob } from "@/lib/api";
+import { getTickets, createJob, uploadTickets } from "@/lib/api";
 import type { Ticket } from "@/lib/types";
 
 export default function HomePage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
   // Load tickets on mount
   useEffect(() => {
@@ -88,6 +91,42 @@ export default function HomePage() {
     );
   }
 
+  // Handle file upload
+  async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file extension
+    if (!file.name.endsWith('.jsonl')) {
+      setError("Please upload a .jsonl file");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+      setUploadSuccess(null);
+
+      const result = await uploadTickets(file);
+      setUploadSuccess(result.message);
+      
+      // Reload tickets to show newly uploaded ones
+      await loadTickets();
+
+      // Clear file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setUploadSuccess(null), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload file");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   const filteredTickets = getFilteredTickets();
 
   return (
@@ -118,9 +157,16 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Success Message */}
+        {uploadSuccess && (
+          <div className="mb-4 p-4 bg-green-950 border border-green-800 rounded-md">
+            <p className="text-sm text-green-200">{uploadSuccess}</p>
+          </div>
+        )}
+
         {/* Controls */}
         <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-4">
             {/* Search */}
             <div className="flex-1 w-full sm:w-auto">
               <input
@@ -132,8 +178,31 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-2 w-full sm:w-auto">
+            {/* Upload Button */}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".jsonl"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="px-4 py-2 text-sm text-gray-300 bg-[#242424] rounded-md hover:bg-[#2f2f2f] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                {uploading ? "Uploading..." : "Upload Tickets"}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            {/* Action Buttons */}
+            <div className="flex gap-2">
               <button
                 onClick={selectAll}
                 disabled={filteredTickets.length === 0}
@@ -149,21 +218,21 @@ export default function HomePage() {
                 Clear
               </button>
             </div>
-          </div>
 
-          {/* Selection Count */}
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-gray-400">
-              {selectedTickets.size} of {filteredTickets.length} tickets selected
-              {searchQuery && ` (filtered from ${tickets.length} total)`}
-            </p>
-            <button
-              onClick={handleCreateJob}
-              disabled={selectedTickets.size === 0 || creating}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              {creating ? "Creating Job..." : "Start Extraction"}
-            </button>
+            {/* Selection Count and Create Job */}
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+              <p className="text-sm text-gray-400">
+                {selectedTickets.size} of {filteredTickets.length} selected
+                {searchQuery && ` (${tickets.length} total)`}
+              </p>
+              <button
+                onClick={handleCreateJob}
+                disabled={selectedTickets.size === 0 || creating}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {creating ? "Creating..." : "Start Extraction"}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -185,7 +254,7 @@ export default function HomePage() {
         )}
 
         {!loading && filteredTickets.length > 0 && (
-          <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] divide-y divide-[#333333]">
+          <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] divide-y divide-[#333333] max-h-[600px] overflow-y-auto">
             {filteredTickets.map((ticket) => (
               <div
                 key={ticket.id}

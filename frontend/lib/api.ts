@@ -72,6 +72,36 @@ export async function getTickets(params?: {
   return apiFetch<Ticket[]>(endpoint);
 }
 
+/**
+ * Upload a JSONL file containing tickets
+ */
+export async function uploadTickets(file: File): Promise<{
+  message: string;
+  total_tickets: number;
+  added: number;
+  skipped: number;
+}> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const url = `${API_URL}/api/upload-tickets`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData,
+    // Don't set Content-Type header - browser will set it with boundary
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      detail: `HTTP ${response.status}: ${response.statusText}`,
+    }));
+    throw new Error(error.detail || "Upload failed");
+  }
+
+  return await response.json();
+}
+
 // ============================================================================
 // Job API
 // ============================================================================

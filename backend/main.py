@@ -3,12 +3,14 @@ Extraction Workbench Backend API
 Main entry point for the FastAPI application.
 """
 import os
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+import json
+from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from typing import List, Optional
 from datetime import datetime
 import logging
+from pydantic import ValidationError
 
 from models import (
     Job,
@@ -100,6 +102,90 @@ async def get_tickets(
         tickets = tickets[:limit]
     
     return tickets
+
+
+@app.post("/api/upload-tickets")
+async def upload_tickets(file: UploadFile = File(...)):
+    """
+    Upload a JSONL file containing tickets.
+    Validates format and adds new tickets to the system.
+    Returns count of tickets added.
+    """
+    if not file.filename or not file.filename.endswith('.jsonl'):
+        raise HTTPException(
+            status_code=400,
+            detail="File must be a JSONL file (.jsonl extension)"
+        )
+    
+    try:
+        # Read file content
+        content = await file.read()
+        content_str = content.decode('utf-8')
+        
+        # Parse JSONL
+        new_tickets = []
+        for line_num, line in enumerate(content_str.strip().split('\n'), 1):
+            if not line.strip():
+                continue
+            
+            try:
+                ticket_data = json.loads(line)
+                # Validate required fields
+                required_fields = ['id', 'subject', 'body', 'from_email', 'received_at', 'channel']
+                missing = [f for f in required_fields if f not in ticket_data]
+                if missing:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Line {line_num}: Missing required fields: {', '.join(missing)}"
+                    )
+                
+                # Create Ticket object
+                ticket = Ticket(**ticket_data)
+                new_tickets.append(ticket)
+                
+            except json.JSONDecodeError as e:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Line {line_num}: Invalid JSON - {str(e)}"
+                )
+            except ValidationError as e:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Line {line_num}: Validation error - {str(e)}"
+                )
+        
+        if not new_tickets:
+            raise HTTPException(
+                status_code=400,
+                detail="No valid tickets found in file"
+            )
+        
+        # Add tickets to storage
+        added_count = 0
+        for ticket in new_tickets:
+            if ticket.id not in storage.tickets:
+                storage.tickets[ticket.id] = ticket
+                added_count += 1
+        
+        storage._save_to_disk()
+        
+        logger.info(f"Uploaded {added_count} new tickets from {file.filename}")
+        
+        return {
+            "message": f"Successfully uploaded {added_count} new tickets",
+            "total_tickets": len(storage.tickets),
+            "added": added_count,
+            "skipped": len(new_tickets) - added_count
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading tickets: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process file: {str(e)}"
+        )
 
 
 @app.post("/api/jobs", response_model=JobResponse, status_code=202)
