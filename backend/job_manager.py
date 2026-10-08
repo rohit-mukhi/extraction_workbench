@@ -91,6 +91,12 @@ class JobManager:
             if not job:
                 return
             
+            # Check if job was cancelled
+            if job.cancelled:
+                logger.info(f"Job {job_id} was cancelled, skipping ticket {ticket_id}")
+                self._mark_skipped(job, ticket_id)
+                return
+            
             # Update progress: queued -> running
             job.progress.queued -= 1
             job.progress.running += 1
@@ -274,3 +280,16 @@ class JobManager:
             self.storage.create_record(needs_review_record)
         
         logger.warning(f"Ticket {ticket_id} marked as failed in job {job.id}")
+
+    def _mark_skipped(self, job, ticket_id: str) -> None:
+        """
+        Mark a ticket as skipped when job is cancelled.
+        
+        Args:
+            job: Job object
+            ticket_id: Ticket ID
+        """
+        job.progress.queued -= 1
+        job.updated_at = datetime.utcnow()
+        
+        logger.info(f"Ticket {ticket_id} skipped due to job cancellation")

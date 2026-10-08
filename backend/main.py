@@ -277,6 +277,39 @@ async def get_job_results(job_id: str):
     return records
 
 
+@app.post("/api/jobs/{job_id}/cancel")
+async def cancel_job(job_id: str):
+    """
+    Cancel a running job.
+    
+    Args:
+        job_id: Job ID to cancel
+    
+    Returns:
+        Success message
+    """
+    job = storage.get_job(job_id)
+    
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    
+    if job.status not in [JobStatus.PENDING, JobStatus.RUNNING]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel job with status {job.status}"
+        )
+    
+    # Set cancelled flag
+    job.cancelled = True
+    job.status = JobStatus.CANCELLED
+    job.updated_at = datetime.utcnow()
+    storage._save_to_disk()
+    
+    logger.info(f"Job {job_id} cancelled by user")
+    
+    return {"message": f"Job {job_id} cancelled successfully"}
+
+
 @app.patch("/api/records/{record_id}", response_model=ExtractedRecord)
 async def update_record(record_id: str, update: RecordUpdate):
     """

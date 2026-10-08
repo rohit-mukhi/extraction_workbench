@@ -135,6 +135,15 @@ export async function getJobResults(jobId: string): Promise<ExtractedRecord[]> {
 }
 
 /**
+ * Cancel a running job
+ */
+export async function cancelJob(jobId: string): Promise<{message: string}> {
+  return apiFetch<{message: string}>(`/api/jobs/${jobId}/cancel`, {
+    method: "POST",
+  });
+}
+
+/**
  * Export job results as CSV
  * Returns the download URL
  */

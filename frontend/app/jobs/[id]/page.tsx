@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { getJob, getJobResults, getTickets, updateRecord, downloadCSV } from "@/lib/api";
+import { getJob, getJobResults, getTickets, updateRecord, downloadCSV, cancelJob } from "@/lib/api";
 import type { Job, ExtractedRecord, Ticket } from "@/lib/types";
 import {
   PRODUCT_OPTIONS,
@@ -32,6 +32,7 @@ export default function JobDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [showOnlyEdited, setShowOnlyEdited] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // Load job and poll for updates
   useEffect(() => {
@@ -87,6 +88,23 @@ export default function JobDetailPage({ params }: PageProps) {
 
   function handleExport() {
     downloadCSV(jobId);
+  }
+
+  async function handleCancelJob() {
+    if (!confirm("Are you sure you want to cancel this job?")) {
+      return;
+    }
+
+    try {
+      setCancelling(true);
+      await cancelJob(jobId);
+      // Reload job data to show cancelled status
+      await loadJobData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to cancel job");
+    } finally {
+      setCancelling(false);
+    }
   }
 
   // Selected record for side-by-side view
@@ -156,14 +174,26 @@ export default function JobDetailPage({ params }: PageProps) {
               </p>
             </div>
 
-            {job?.status === "completed" && (
-              <button
-                onClick={handleExport}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
-              >
-                Export CSV
-              </button>
-            )}
+            <div className="flex gap-3">
+              {(job?.status === "running" || job?.status === "pending") && (
+                <button
+                  onClick={handleCancelJob}
+                  disabled={cancelling}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {cancelling ? "Cancelling..." : "Cancel Job"}
+                </button>
+              )}
+              
+              {job?.status === "completed" && (
+                <button
+                  onClick={handleExport}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
+                >
+                  Export CSV
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -181,6 +211,8 @@ export default function JobDetailPage({ params }: PageProps) {
                   ? "bg-blue-950 text-blue-300"
                   : job?.status === "failed"
                   ? "bg-red-950 text-red-300"
+                  : job?.status === "cancelled"
+                  ? "bg-orange-950 text-orange-300"
                   : "bg-[#242424] text-gray-300"
               }`}
             >

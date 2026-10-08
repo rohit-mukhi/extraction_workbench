@@ -60,6 +60,7 @@ class JobStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 # Input ticket model
@@ -183,6 +184,7 @@ class Job(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     error_message: Optional[str] = None
+    cancelled: bool = Field(default=False, description="Whether the job was cancelled by user")
 
     def model_post_init(self, __context):
         """Initialize progress after model creation."""
