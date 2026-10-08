@@ -229,12 +229,12 @@ export default function JobDetailPage({ params }: PageProps) {
         {records.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Records List */}
-            <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4">
+            <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4 flex flex-col" style={{height: 'calc(100vh - 400px)', minHeight: '500px'}}>
               <h2 className="text-lg font-semibold text-gray-100 mb-4">
                 Extracted Records
               </h2>
 
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
+              <div className="space-y-2 flex-1 overflow-y-auto">
                 {records.map((record) => (
                   <button
                     key={record.id}
@@ -273,31 +273,32 @@ export default function JobDetailPage({ params }: PageProps) {
             </div>
 
             {/* Detail View */}
-            <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4">
+            <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4 flex flex-col" style={{height: 'calc(100vh - 400px)', minHeight: '500px'}}>
               {selectedRecord && selectedTicket ? (
-                <div>
+                <div className="flex flex-col h-full">
                   <h2 className="text-lg font-semibold text-gray-100 mb-4">
                     Review & Edit
                   </h2>
 
-                  {/* Original Ticket */}
-                  <div className="mb-6 p-4 bg-[#242424] rounded-md border border-[#333333]">
-                    <h3 className="text-sm font-medium text-gray-300 mb-2">
-                      Original Ticket
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-1">
-                      {selectedTicket.id} • {selectedTicket.from_email}
-                    </p>
-                    <p className="text-sm font-medium text-gray-100 mb-2">
-                      {selectedTicket.subject}
-                    </p>
-                    <p className="text-sm text-gray-300 whitespace-pre-wrap max-h-32 overflow-y-auto">
-                      {selectedTicket.body}
-                    </p>
-                  </div>
+                  <div className="flex-1 overflow-y-auto space-y-4">
+                    {/* Original Ticket */}
+                    <div className="p-4 bg-[#242424] rounded-md border border-[#333333]">
+                      <h3 className="text-sm font-medium text-gray-300 mb-2">
+                        Original Ticket
+                      </h3>
+                      <p className="text-xs text-gray-500 mb-1">
+                        {selectedTicket.id} • {selectedTicket.from_email}
+                      </p>
+                      <p className="text-sm font-medium text-gray-100 mb-2">
+                        {selectedTicket.subject}
+                      </p>
+                      <p className="text-sm text-gray-300 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                        {selectedTicket.body}
+                      </p>
+                    </div>
 
-                  {/* Extracted Fields */}
-                  <div className="space-y-4">
+                    {/* Extracted Fields */}
+                    <div className="space-y-4">
                     <RecordField
                       label="Company"
                       field="company"
@@ -397,6 +398,7 @@ export default function JobDetailPage({ params }: PageProps) {
                         handleFieldUpdate(selectedRecord.id, "escalated", value)
                       }
                     />
+                  </div>
                   </div>
                 </div>
               ) : (

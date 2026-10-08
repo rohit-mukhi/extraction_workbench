@@ -257,7 +257,7 @@ class JobManager:
     
     def _mark_failed(self, job, ticket_id: str) -> None:
         """
-        Mark a ticket as failed in job progress.
+        Mark a ticket as failed in job progress and create a needs_review record.
         
         Args:
             job: Job object
@@ -266,5 +266,11 @@ class JobManager:
         job.progress.running -= 1
         job.progress.failed += 1
         job.updated_at = datetime.utcnow()
+        
+        # Create a needs_review record for the failed ticket
+        ticket = self.storage.get_ticket(ticket_id)
+        if ticket:
+            needs_review_record = self._create_needs_review_record(ticket)
+            self.storage.create_record(needs_review_record)
         
         logger.warning(f"Ticket {ticket_id} marked as failed in job {job.id}")
