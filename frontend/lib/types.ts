@@ -34,7 +34,7 @@ export type RequestedAction =
 
 export type RecordStatus = "completed" | "needs_review" | "failed";
 
-export type JobStatus = "pending" | "running" | "completed" | "failed";
+export type JobStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
 
 // ============================================================================
 // Core Data Types
@@ -94,6 +94,7 @@ export interface Job {
   created_at: string;
   updated_at: string;
   error_message: string | null;
+  cancelled: boolean;
 }
 
 // ============================================================================
