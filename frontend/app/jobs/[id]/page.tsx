@@ -31,6 +31,7 @@ export default function JobDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+  const [showOnlyEdited, setShowOnlyEdited] = useState(false);
 
   // Load job and poll for updates
   useEffect(() => {
@@ -98,6 +99,14 @@ export default function JobDetailPage({ params }: PageProps) {
   const progressPercent = job
     ? Math.round((job.progress.completed / job.progress.total) * 100)
     : 0;
+
+  // Filter records based on human-edited toggle
+  const filteredRecords = showOnlyEdited
+    ? records.filter((r) => r.human_edited_fields.length > 0)
+    : records;
+
+  // Count of human-edited records
+  const editedCount = records.filter((r) => r.human_edited_fields.length > 0).length;
 
   if (loading && !job) {
     return (
@@ -230,12 +239,36 @@ export default function JobDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Records List */}
             <div className="bg-[#1a1a1a] rounded-lg shadow-lg border border-[#333333] p-4 flex flex-col" style={{height: 'calc(100vh - 400px)', minHeight: '500px'}}>
-              <h2 className="text-lg font-semibold text-gray-100 mb-4">
-                Extracted Records
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-100">
+                  Extracted Records
+                </h2>
+                
+                {/* Filter Toggle */}
+                <button
+                  onClick={() => setShowOnlyEdited(!showOnlyEdited)}
+                  className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                    showOnlyEdited
+                      ? "bg-blue-600 text-white"
+                      : "bg-[#242424] text-gray-300 hover:bg-[#2f2f2f]"
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  {showOnlyEdited ? `Edited (${editedCount})` : `Show Edited Only (${editedCount})`}
+                </button>
+              </div>
 
               <div className="space-y-2 flex-1 overflow-y-auto">
-                {records.map((record) => (
+                {filteredRecords.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    {showOnlyEdited 
+                      ? "No human-edited records yet" 
+                      : "No records available"}
+                  </div>
+                ) : (
+                  filteredRecords.map((record) => (
                   <button
                     key={record.id}
                     onClick={() => setSelectedRecordId(record.id)}
@@ -247,12 +280,26 @@ export default function JobDetailPage({ params }: PageProps) {
                       record.status === "needs_review"
                         ? "border-l-4 border-l-yellow-500"
                         : ""
+                    } ${
+                      record.human_edited_fields.length > 0
+                        ? "border-r-4 border-r-green-500"
+                        : ""
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono text-gray-500">
-                        {record.ticket_id}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-gray-500">
+                          {record.ticket_id}
+                        </span>
+                        {record.human_edited_fields.length > 0 && (
+                          <span className="text-xs px-2 py-0.5 bg-green-950 text-green-300 rounded flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edited
+                          </span>
+                        )}
+                      </div>
                       <span
                         className={`text-xs px-2 py-1 rounded ${
                           STATUS_COLORS[record.status]
