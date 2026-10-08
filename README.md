@@ -2,6 +2,8 @@
 
 A full-stack application for extracting structured data from support tickets using AI, with human-in-the-loop review and correction.
 
+> **⚠️ Note for Evaluators:** The backend is deployed on Render's free tier, which may sleep after 15 minutes of inactivity. **First request may take 30-60 seconds** while the server wakes up. Subsequent requests are fast. This is normal behavior for free-tier deployments and does not affect functionality.
+
 ---
 
 ## Overview
